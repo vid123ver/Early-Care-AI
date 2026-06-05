@@ -1,0 +1,16 @@
+flask
+flask-cors
+bcrypt
+PyJWT
+joblib
+google-generativeai
+numpy
+pandas
+pillow
+pymongo
+pdfplumber
+pytesseract
+scikit-learn
+python-dotenv
+reportlab
+requests

@@ -17,6 +17,7 @@ import SymptomChecker from "./pages/SymptomChecker.jsx";
 import DietGuide from "./pages/DietGuide.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
 import { AuthProvider } from "./auth/AuthContext.jsx";
 import ProtectedRoute from "./auth/ProtectedRoute.jsx";
 
@@ -27,6 +28,7 @@ createRoot(document.getElementById("root")).render(
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route
             path="/*"
             element={

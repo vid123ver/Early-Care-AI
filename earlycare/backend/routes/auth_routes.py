@@ -1,9 +1,11 @@
 import os
+import hashlib
+import secrets
 from flask import Blueprint, request, jsonify, g
 import bcrypt
 import jwt
 from datetime import datetime, timedelta
-from database.mongo import insert_user, fetch_user
+from database.mongo import insert_user, fetch_user, update_user
 from bson.objectid import ObjectId
 
 SECRET_KEY = os.getenv(
@@ -105,3 +107,79 @@ def me():
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
     return jsonify({'message': 'Logged out'}), 200
+
+
+@auth_bp.route('/forgot-password', methods=['POST'])
+def forgot_password():
+    data = request.json or {}
+    email = (data.get('email') or '').strip().lower()
+    if not email:
+        return jsonify({'message': 'Email is required'}), 400
+
+    user = fetch_user({'email': email})
+    if not user:
+        return jsonify({'message': 'If the email exists, a reset code has been created.'}), 200
+
+    reset_token = secrets.token_urlsafe(32)
+    reset_token_hash = hashlib.sha256(reset_token.encode('utf-8')).hexdigest()
+    reset_expires_at = datetime.utcnow() + timedelta(minutes=30)
+
+    update_user(
+        {'_id': user['_id']},
+        {
+            '$set': {
+                'password_reset_token_hash': reset_token_hash,
+                'password_reset_expires_at': reset_expires_at,
+            }
+        },
+    )
+
+    return jsonify({
+        'message': 'Reset code created. Copy it and use it to set a new password.',
+        'reset_token': reset_token,
+        'expires_in_minutes': 30,
+    }), 200
+
+
+@auth_bp.route('/reset-password', methods=['POST'])
+def reset_password():
+    data = request.json or {}
+    email = (data.get('email') or '').strip().lower()
+    reset_token = (data.get('reset_token') or '').strip()
+    new_password = data.get('new_password') or ''
+
+    if not email or not reset_token or not new_password:
+        return jsonify({'message': 'Email, reset code, and new password are required'}), 400
+    if len(new_password) < 6:
+        return jsonify({'message': 'Password must be at least 6 characters'}), 400
+
+    user = fetch_user({'email': email})
+    if not user:
+        return jsonify({'message': 'Invalid reset code or email'}), 400
+
+    stored_hash = user.get('password_reset_token_hash')
+    expires_at = user.get('password_reset_expires_at')
+    if not stored_hash or not expires_at:
+        return jsonify({'message': 'No active reset request found'}), 400
+
+    if datetime.utcnow() > expires_at:
+        return jsonify({'message': 'Reset code has expired'}), 400
+
+    reset_token_hash = hashlib.sha256(reset_token.encode('utf-8')).hexdigest()
+    if reset_token_hash != stored_hash:
+        return jsonify({'message': 'Invalid reset code or email'}), 400
+
+    update_user(
+        {'_id': user['_id']},
+        {
+            '$set': {
+                'password': hash_password(new_password),
+            },
+            '$unset': {
+                'password_reset_token_hash': '',
+                'password_reset_expires_at': '',
+            },
+        },
+    )
+
+    return jsonify({'message': 'Password updated successfully'}), 200

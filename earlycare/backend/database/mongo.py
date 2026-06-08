@@ -19,6 +19,10 @@ def fetch_user(query):
     return users_collection.find_one(query)
 
 
+def update_user(query, updates):
+    return users_collection.update_one(query, updates)
+
+
 def insert_report(report_data):
     return reports_collection.insert_one(report_data)
 

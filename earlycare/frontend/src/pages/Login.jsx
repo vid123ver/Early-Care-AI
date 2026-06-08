@@ -53,6 +53,11 @@ const Login = () => {
             required
           />
         </div>
+        <div style={{ textAlign: "right", marginTop: "-0.5rem", marginBottom: "1rem" }}>
+          <Link className="auth-link" to="/forgot-password">
+            Forgot password?
+          </Link>
+        </div>
         <button type="submit" className="auth-button" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </button>

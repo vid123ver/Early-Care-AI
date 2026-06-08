@@ -2,7 +2,12 @@ import os
 from pymongo import MongoClient
 # export MONGO_URI="mongodb+srv://vidhanverma2311_db_user:<YOUR_PASSWORD>@<cluster-host>/earlycare?retryWrites=true&w=majority"
 MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
-client = MongoClient(MONGO_URI)
+client = MongoClient(
+    MONGO_URI,
+    serverSelectionTimeoutMS=5000,
+    connectTimeoutMS=5000,
+    socketTimeoutMS=5000,
+)
 db = client['earlycare']
 
 users_collection = db['users']

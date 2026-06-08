@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: earlycare-backend
+    env: docker
+    plan: free
+    rootDir: earlycare
+    dockerfilePath: ./backend/Dockerfile
+    autoDeploy: true
+    healthCheckPath: /
+    envVars:
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: FRONTEND_ORIGIN
+        value: https://earlycare-frontend.onrender.com
+
+  - type: web
+    name: earlycare-frontend
+    env: docker
+    plan: free
+    rootDir: earlycare
+    dockerfilePath: ./frontend/Dockerfile
+    autoDeploy: true
+    envVars:
+      - key: BACKEND_UPSTREAM
+        value: https://earlycare-backend.onrender.com

@@ -111,7 +111,7 @@ function App() {
         history: Object.values(history),
       };
 
-      const res = await axios.post("http://127.0.0.1:5001/predict", data);
+      const res = await axios.post("/api/predict", data);
       setPrediction(res.data.prediction);
     } catch (error) {
       console.error("Prediction failed:", error);

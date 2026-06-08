@@ -29,15 +29,16 @@ from routes.diet_routes import diet_bp
 from routes.report_pdf_routes import report_pdf_bp
 
 app = Flask(__name__)
+FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5177")
 CORS(
     app,
     supports_credentials=True,
-    resources={r"/*": {"origins": "http://localhost:5177"}}
+    resources={r"/*": {"origins": FRONTEND_ORIGIN}}
 )
 
 @app.after_request
 def after_request(response):
-    response.headers.add("Access-Control-Allow-Origin", "http://localhost:5177")
+    response.headers.add("Access-Control-Allow-Origin", FRONTEND_ORIGIN)
     response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization")
     response.headers.add("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
     return response
@@ -166,7 +167,7 @@ app.register_blueprint(diet_bp)
 app.register_blueprint(report_pdf_bp)
 
 if __name__ == '__main__':
-    # Running on port 5002 to avoid conflict
-    app.run(debug=True, port=5002)
+    # Use Render's injected PORT when available, otherwise fall back locally.
+    app.run(debug=True, host="0.0.0.0", port=int(os.getenv("PORT", 5002)))
 
 
